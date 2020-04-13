@@ -11,3 +11,4 @@ tqdm
 cython
 GPUtil
 pycocotools
+pandas
