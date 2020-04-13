@@ -7,18 +7,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage.morphology import binary_fill_holes, binary_opening, binary_dilation
 import nibabel as nib
+import pandas as pd
 
 from maskrcnn.config import cfg
 
 
-def load_prep_img(data_dir, imname, spacing, slice_intv, do_clip=False, num_slice=3, is_train=False):
+def load_prep_img(data_dir, imname, spacing, slice_intv, mask_list, do_clip=False, num_slice=3, is_train=False):
     """load volume, windowing, interpolate multiple slices, clip black border, resize according to spacing"""
     im, mask = load_multislice_img_16bit_png(data_dir, imname, slice_intv, do_clip, num_slice)
-
+    
     im = windowing(im, cfg.INPUT.WINDOWING)
-
-    if do_clip:  # clip black border
+    if do_clip:  # clip blget_masack border
         c = get_range(mask, margin=0)
+        for nums in c:
+            mask_list.append(float(nums))
         if cfg.INPUT.DATA_AUG_POSITION is not False and is_train:
             offset_aug = np.random.randint(16)-8
             c[0] += offset_aug
@@ -30,6 +32,8 @@ def load_prep_img(data_dir, imname, spacing, slice_intv, do_clip=False, num_slic
         # print(im.shape)
     else:
         c = [0, im.shape[0]-1, 0, im.shape[1]-1]
+        for nums in c:
+            mask_list.append(float(nums))
 
     im_shape = im.shape[0:2]
     if spacing is not None and cfg.INPUT.NORM_SPACING > 0:  # spacing adjust, will overwrite simple scaling
@@ -48,8 +52,8 @@ def load_prep_img(data_dir, imname, spacing, slice_intv, do_clip=False, num_slic
     if im_scale != 1:
         im = cv2.resize(im, None, None, fx=im_scale, fy=im_scale, interpolation=cv2.INTER_LINEAR)
         # mask = cv2.resize(mask, None, None, fx=im_scale, fy=im_scale, interpolation=cv2.INTER_LINEAR)
-
-    return im, im_scale, c
+    mask_list.append(im_scale)
+    return im, im_scale, c, mask_list
 
 
 def load_multislice_img_16bit_png(data_dir, imname, slice_intv, do_clip, num_slice):
