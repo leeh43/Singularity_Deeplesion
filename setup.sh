@@ -1,7 +1,7 @@
 #!/bin/bash
 # set up a virtual environment to avoid library conflict
-virtualenv venv --python=python3.6
-source venv/bin/activate
+#virtualenv venv --python=python3.6
+#source venv/bin/activate
 
 echo "installing pytorch 1.1. You may need to go to https://pytorch.org/ to find the best way to install on your machine (OS, CUDA etc.)"
 pip3 install torch==1.1.0 -f https://download.pytorch.org/whl/cu100/stable
